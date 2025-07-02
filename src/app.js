@@ -4,8 +4,11 @@ const app = express();
 
 const connectDB = require("./config/database");
 
-const dbConnection = connectDB();
-dbConnection
+app.use(express.json());
+
+const UserModel = require("./models/user")
+
+connectDB()
   .then(() => {
     console.log("Database connection successful");
     app.listen(3000);
