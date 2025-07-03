@@ -8,10 +8,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minLength: 3,
-      maxLength: 50,
+      maxLength: 50
     },
     lastName: {
       type: String,
+      minLength: 1,
+      maxLength: 50,
       required: true,
     },
     email: {
@@ -39,7 +41,6 @@ const userSchema = new mongoose.Schema(
     },
     age: {
       type: Number,
-      required: true,
       min: 18,
     },
     bio: {
@@ -48,7 +49,6 @@ const userSchema = new mongoose.Schema(
     },
     skills: {
       type: [String],
-      required: true,
     },
     gender: {
       type: String,
