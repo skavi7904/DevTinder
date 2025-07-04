@@ -1,42 +1,75 @@
+//express
 const express = require("express");
+//db
 const connectDB = require("./config/database");
+//userModel
 const UserModel = require("./models/user");
+//cookieParser
 const cookieParser = require("cookie-parser");
+//jwt
 const jwt = require("jsonwebtoken");
+//bcrypt-password
+const bcrypt = require("bcrypt");
+//validating signup req
 const { ValidateSignUpUserRequestBody } = require("./utils/validation");
 
+//express-app
 const app = express();
 
+//to get json from req
 app.use(express.json());
+//to retrieve cookies from req
 app.use(cookieParser());
 
+//signup api
 app.post("/signup", async (req, res) => {
   try {
     const reqBody = req.body;
-    console.log(JSON.stringify(reqBody));
     ValidateSignUpUserRequestBody(reqBody);
-    const userCreatedPromise = await UserModel.create(reqBody);
-    res.send(userCreatedPromise);
+
+    const { firstName, lastName, email, password } = reqBody;
+    passwordHash = await bcrypt.hash(password, 10);
+
+    await UserModel.create({
+      firstName,
+      lastName,
+      email,
+      password:passwordHash,
+    });
+
+    res.send("Signed up successfully!");
   } catch (err) {
     res.status(400).send("CATCH: Error while signing up: " + err.message);
   }
 });
 
+//login api
 app.post("/login", async (req, res) => {
   try {
     const reqBody = req.body;
     const { email, password } = reqBody;
-    if(!email || !password) return res.status(400).send("Please provide creds!")
+
+    if (!email || !password) return res.status(400).send("Please provide creds!")
+    
     const user = await UserModel.findOne({ email: email });
-    if (user?.password === password) return res.send("Your are logged in successfully!");
-    res.status(401).send("Invalid credentials!");
+    if (!user.validatePassword(password)) res.status(401).send("Invalid credentials!");
+
+    const token = jwt.sign({ _id: user._id }, "JWTPRIVATEKEY");
+
+    res.cookie("token", token);
+    res.send("Your are logged in successfully!"); 
+    
   } catch (err) {
     res.status(400).send("CATCH: Error while logging in: " + err.message);
   }
 })
 
+//feed api
 app.get("/feed", async (req, res) => {
   try {
+    const { token } = req.cookies;
+    const { _id } = jwt.verify(token, "JWTPRIVATEKEY");
+    if(!await UserModel.find({_id:_id})) return res.status(401).send("User should be signed up to view feed!")
     const users = await UserModel.find({});
     res.send(users);
   } catch (err) {
@@ -44,12 +77,13 @@ app.get("/feed", async (req, res) => {
   }
 })
 
+//error handling middleware
 app.use((err, req, res, next) => {
   console.error("Global Error Handler:", err);
   res.status(500).send("Internal Server Error: " + err.message);
 });
 
-
+//db and app launch
 connectDB()
   .then(() => {
     console.log("Database connection successful");

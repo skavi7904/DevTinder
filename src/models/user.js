@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 
 const validator = require("validator");
 
+const bcrypt = require("bcrypt");
+
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -63,5 +65,10 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.methods.validatePassword = async function (inputPassword) {
+  const success = await bcrypt.compare(inputPassword, this.password);
+  return success;
+}
 
 module.exports = mongoose.model("User", userSchema);
