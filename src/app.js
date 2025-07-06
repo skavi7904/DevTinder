@@ -21,6 +21,9 @@ app.use(express.json());
 //to retrieve cookies from req
 app.use(cookieParser());
 
+//auth-middleware for user
+const {userAuth}=require("./middlewares/auth")
+
 //signup api
 app.post("/signup", async (req, res) => {
   try {
@@ -54,9 +57,9 @@ app.post("/login", async (req, res) => {
     const user = await UserModel.findOne({ email: email });
     if (!user.validatePassword(password)) res.status(401).send("Invalid credentials!");
 
-    const token = jwt.sign({ _id: user._id }, "JWTPRIVATEKEY");
+    const token = user.getJWTToken();
 
-    res.cookie("token", token);
+    res.cookie("token", token, {maxAge: 7 * 24 * 60 * 60 * 1000});
     res.send("Your are logged in successfully!"); 
     
   } catch (err) {
@@ -65,11 +68,8 @@ app.post("/login", async (req, res) => {
 })
 
 //feed api
-app.get("/feed", async (req, res) => {
+app.get("/feed",userAuth, async (req, res) => {
   try {
-    const { token } = req.cookies;
-    const { _id } = jwt.verify(token, "JWTPRIVATEKEY");
-    if(!await UserModel.find({_id:_id})) return res.status(401).send("User should be signed up to view feed!")
     const users = await UserModel.find({});
     res.send(users);
   } catch (err) {
