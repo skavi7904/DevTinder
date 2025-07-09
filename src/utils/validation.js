@@ -41,4 +41,17 @@ const ValidateSignUpUserRequestBody = (req) => {
   }
 };
 
-module.exports = {ValidateSignUpUserRequestBody}
+const validateProfileEditReqBody = (body) => {  
+  const allowedEditFields = [
+    "firstName",
+    "lastName",
+    "age",
+    "bio",
+    "skills",
+    "gender",
+    'photoUrl',
+  ];
+  return Object.keys(body).every((field) => allowedEditFields.includes(field));
+};
+
+module.exports = {ValidateSignUpUserRequestBody, validateProfileEditReqBody}

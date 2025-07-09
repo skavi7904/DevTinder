@@ -22,6 +22,7 @@ authRouter.post("/signup", async (req, res) => {
       age,
       skills,
       gender,
+      photoUrl
     });
 
     res.send("Signed up successfully!");
@@ -50,6 +51,16 @@ authRouter.post("/login", async (req, res) => {
     res.send("Your are logged in successfully!");
   } catch (err) {
     res.status(400).send("CATCH: Error while logging in: " + err.message);
+  }
+
+  
+});
+authRouter.post("/logout", async (req, res) => {
+  try {
+    res.cookie("token", "");
+    res.send("Your are logged out successfully!");
+  } catch (err) {
+    res.status(400).send("CATCH: Error while logging out: " + err.message);
   }
 });
 
