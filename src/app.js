@@ -17,10 +17,12 @@ app.use(cookieParser());
 const { authRouter } = require("./router/auth");
 const { profileRouter } = require("./router/profile");
 const { requestRouter } = require("./router/request");
-
+const { userRouter } = require('./router/user')
+ 
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
+app.use('/', userRouter);
 
 //error handling middleware
 app.use((err, req, res, next) => {
